@@ -1,39 +1,44 @@
-import sqlite3
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 
-conn = sqlite3.connect('movies.db')
-cursor = conn.cursor()
+app = Flask(__name__)
 
-# Select all movies
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///old_movies.db'
 
-cursor.execute('SELECT * FROM movies')
-all_movies = cursor.fetchall()
-print("All movies:")
-for movie in all_movies:
-    print(movie)
+db = SQLAlchemy(app)
 
-cursor.execute('''
-UPDATE movies
-SET rating = 9.0
-WHERE title = 'Inception'
-''')
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    director = db.Column(db.String(100))
+    year = db.Column(db.Integer)
+    rating = db.Column(db.Float)
 
-# Create the movies table
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS movies (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    director TEXT,
-    year INTEGER,
-    rating FLOAT
-)
-''')
-conn.commit()
+with app.app_context():
+    db.create_all()
 
-movie = ('', 'Francis Ford Coppola', 1972, 9.2)
+@app.route('/')
+def index():
+    movies = Movie.query.all()
+    return render_template('index.html', movies=movies)
 
-cursor.execute(f'''
-INSERT INTO movies (title, director, year, rating)
-VALUES ('{movie[0]}', '{movie[1]}', {movie[2]}, {movie[3]})
-''')
-conn.commit()
-conn.close()
+@app.route('/add', methods=['GET', 'POST'])
+def add_movie():
+    if request.method == 'POST':
+        new_movie = Movie(
+            title=request.form['title'],
+            director=request.form['director'],
+            year=int(request.form['year']),
+            rating=float(request.form['rating'])
+        )
+        db.session.add(new_movie)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template('add.html')
+
+#@app.route('/edit/<int:id>', method=['GET', 'POST'])
+#def edit_movie(id):
+
+if __name__ == '__main__':
+
+    app.run(debug=True)

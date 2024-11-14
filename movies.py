@@ -69,13 +69,12 @@ def main():
     if conn is not None:
 
         create_table(conn)
-
         
 
         while True:
 
             print("\n--- Movie Database Manager ---")
-
+            
             print("1. Add a new movie")
 
             print("2. Display all movies")
