@@ -36,8 +36,26 @@ def add_movie():
         return redirect(url_for('index'))
     return render_template('add.html')
 
-#@app.route('/edit/<int:id>', method=['GET', 'POST'])
-#def edit_movie(id):
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit_movie(id):
+    movie = Movie.query.get_or_404(id)
+
+    if request.method == 'POST':
+
+        movie.title = request.form['title']
+
+        movie.director = request.form['director']
+
+        movie.year = int(request.form['year'])
+
+        movie.rating = float(request.form['rating'])
+
+        db.session.commit()
+
+        return redirect(url_for('index'))
+
+    return render_template('edit.html', movie=movie)
+
 
 if __name__ == '__main__':
 
