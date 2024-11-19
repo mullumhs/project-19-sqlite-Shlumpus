@@ -38,6 +38,7 @@ def add_movie():
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit_movie(id):
+
     movie = Movie.query.get_or_404(id)
 
     if request.method == 'POST':
@@ -56,6 +57,19 @@ def edit_movie(id):
 
     return render_template('edit.html', movie=movie)
 
+@app.route('/delete/<int:id>')
+def delete_movie(id):
+    movie = Movie.query.get_or_404(id)
+    db.session.delete(movie)
+    db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/search')
+def search():
+    query = request.args.get('query', '')
+    Movie.query.filter()
+    movies = [query]
+    return render_template('search.html', movies=movies, query=query)
 
 if __name__ == '__main__':
 
